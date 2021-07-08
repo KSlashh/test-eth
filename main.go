@@ -19,7 +19,6 @@ func init() {
 	flag.StringVar(&function, "func", "getBalance", "choose function to run:\n" +
 		"  getBalance [address]\n" +
 		"  getBalanceAt [address] [height]\n" +
-		"  transferEther [toAddress] [amount/(wei)]\n" +
 		"  getHeader [height]\n" +
 		"  testInfinite [instanceAmount] [initEther(default 1e18)]\n" +
 		"  testFixedRound [instanceAmount] [round] [initEther/(wei)(default 1e18)]\n" +
@@ -54,16 +53,6 @@ func main() {
 			log.Fatal("GetBalance fail", err)
 		}
 		log.Infof("balance of %s at height %d is %d", address, blockHeight ,balance)
-	case "transferEther":
-        amount,err := strconv.ParseInt(flag.Arg(1), 10, 64)
-		if err != nil {
-			log.Fatal("Fail to parse args! Second arg must be int.", err)
-		}
-		hash,err := api.TransferEth(conf.Node, conf.PrivateKey, flag.Arg(0), amount)
-		if err != nil {
-			log.Fatal("TransferEther fail", err)
-		}
-		log.Infof("Success! Transfer Ether at Tx %x .", hash)
 	case "getHeader":
 		blockHeight,err := strconv.Atoi(flag.Arg(0))
 		if err != nil {

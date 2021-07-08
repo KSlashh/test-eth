@@ -173,7 +173,7 @@ func InfiniteTestInstance(clientUrl string, mainPrivateKeyHex string, index int,
 
 	// admin-->initEther-->A
 	for {
-		hash, err := api.TransferEth(clientUrl, mainPrivateKeyHex, pkA, initEther)
+		hash, err := api.TransferEth(client, mainPrivateKeyHex, pkA, initEther)
 		if err != nil {
 			continue
 		}
@@ -185,7 +185,7 @@ func InfiniteTestInstance(clientUrl string, mainPrivateKeyHex string, index int,
 
 	// admin-->initEther-->B
 	for {
-		hash, err := api.TransferEth(clientUrl, mainPrivateKeyHex, pkB, initEther)
+		hash, err := api.TransferEth(client, mainPrivateKeyHex, pkB, initEther)
 		if err != nil {
 			continue
 		}
@@ -206,7 +206,7 @@ func InfiniteTestInstance(clientUrl string, mainPrivateKeyHex string, index int,
 
 	for {
 		// A-->10000wei-->B
-		hash,err := api.TransferEth(clientUrl, skA, pkB, 10000)
+		hash,err := api.TransferEth(client, skA, pkB, 10000)
 		if err != nil {
 			continue
 		}
@@ -219,7 +219,7 @@ func InfiniteTestInstance(clientUrl string, mainPrivateKeyHex string, index int,
 		}
 
 		// B-->10000wei-->A
-		hash,err = api.TransferEth(clientUrl, skB, pkA, 10000)
+		hash,err = api.TransferEth(client, skB, pkA, 10000)
 		if err != nil {
 			continue
 		}
@@ -256,7 +256,7 @@ func FixedTimeTestInstance(clientUrl string, mainPrivateKeyHex string, index int
 
 	// admin-->initEther-->A
 	for {
-		hash, err := api.TransferEth(clientUrl, mainPrivateKeyHex, pkA, initEther)
+		hash, err := api.TransferEth(client, mainPrivateKeyHex, pkA, initEther)
 		if err != nil {
 			continue
 		}
@@ -268,7 +268,7 @@ func FixedTimeTestInstance(clientUrl string, mainPrivateKeyHex string, index int
 
 	// admin-->initEther-->B
 	for {
-		hash, err := api.TransferEth(clientUrl, mainPrivateKeyHex, pkB, initEther)
+		hash, err := api.TransferEth(client, mainPrivateKeyHex, pkB, initEther)
 		if err != nil {
 			continue
 		}
@@ -290,7 +290,7 @@ func FixedTimeTestInstance(clientUrl string, mainPrivateKeyHex string, index int
 
 	for time.Since(timeStart).Milliseconds() >= int64(duration)*1000 {
 		// A-->10000wei-->B
-		hash,err := api.TransferEth(clientUrl, skA, pkB, 10000)
+		hash,err := api.TransferEth(client, skA, pkB, 10000)
 		if err != nil {
 			continue
 		}
@@ -303,7 +303,7 @@ func FixedTimeTestInstance(clientUrl string, mainPrivateKeyHex string, index int
 		}
 
 		// B-->10000wei-->A
-		hash,err = api.TransferEth(clientUrl, skB, pkA, 10000)
+		hash,err = api.TransferEth(client, skB, pkA, 10000)
 		if err != nil {
 			continue
 		}
@@ -340,7 +340,7 @@ func FixedRoundTestInstance(clientUrl string, mainPrivateKeyHex string, index in
 
 	// admin-->initEther-->A
 	for {
-		hash, err := api.TransferEth(clientUrl, mainPrivateKeyHex, pkA, initEther)
+		hash, err := api.TransferEth(client, mainPrivateKeyHex, pkA, initEther)
 		if err != nil {
 			continue
 		}
@@ -352,7 +352,7 @@ func FixedRoundTestInstance(clientUrl string, mainPrivateKeyHex string, index in
 
 	// admin-->initEther-->B
 	for {
-		hash, err := api.TransferEth(clientUrl, mainPrivateKeyHex, pkB, initEther)
+		hash, err := api.TransferEth(client, mainPrivateKeyHex, pkB, initEther)
 		if err != nil {
 			continue
 		}
@@ -373,7 +373,7 @@ func FixedRoundTestInstance(clientUrl string, mainPrivateKeyHex string, index in
 
 	for i:=0;i<round;i++ {
 		// A-->10000wei-->B
-		hash,err := api.TransferEth(clientUrl, skA, pkB, 10000)
+		hash,err := api.TransferEth(client, skA, pkB, 10000)
 		if err != nil {
 			continue
 		}
@@ -386,7 +386,7 @@ func FixedRoundTestInstance(clientUrl string, mainPrivateKeyHex string, index in
 		}
 
 		// B-->10000wei-->A
-		hash,err = api.TransferEth(clientUrl, skB, pkA, 10000)
+		hash,err = api.TransferEth(client, skB, pkA, 10000)
 		if err != nil {
 			continue
 		}

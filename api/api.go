@@ -11,12 +11,7 @@ import (
 	"math/big"
 )
 
-func TransferEth(clientUrl string, privateKeyHex string, toAddressHex string, amount int64) (txHash [32]byte, err error) {
-	client, err := ethclient.Dial(clientUrl)
-	if err != nil {
-		return common.Hash{},err
-	}
-
+func TransferEth(client *ethclient.Client, privateKeyHex string, toAddressHex string, amount int64) (txHash [32]byte, err error) {
 	privateKey, err := crypto.HexToECDSA(privateKeyHex)
 	if err != nil {
 		return common.Hash{},err
