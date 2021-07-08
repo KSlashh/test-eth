@@ -2,18 +2,28 @@ package main
 
 import (
 	"flag"
-	"github.com/test-eth/api"
-	"github.com/test-eth/config"
-	"github.com/test-eth/log"
 	"strconv"
+
+	"github.com/KSlashh/test-eth/api"
+	"github.com/KSlashh/test-eth/config"
+	"github.com/KSlashh/test-eth/log"
+	"github.com/KSlashh/test-eth/testUtils"
 )
 
 var confFile string
 var function string
+var defaultInitEther int64 = 10^18
 
 func init() {
 	flag.StringVar(&confFile, "conf", "./config.json", "configuration file path")
-	flag.StringVar(&function, "func", "deploy", "choose function to run: deploy or run")
+	flag.StringVar(&function, "func", "getBalance", "choose function to run:\n" +
+		"  getBalance [address]\n" +
+		"  getBalanceAt [address] [height]\n" +
+		"  transferEther [toAddress] [amount/(wei)]\n" +
+		"  getHeader [height]\n" +
+		"  testInfinite [instanceAmount] [initEther(default 1e18)]\n" +
+		"  testFixedRound [instanceAmount] [round] [initEther/(wei)(default 1e18)]\n" +
+		"  testFixedTime [instanceAmount] [duration/(second)] [initEther/(wei)(default 1e18)]")
 
 	flag.Parse()
 
@@ -45,15 +55,15 @@ func main() {
 		}
 		log.Infof("balance of %s at height %d is %d", address, blockHeight ,balance)
 	case "transferEther":
-        amount,err := strconv.Atoi(flag.Arg(1))
+        amount,err := strconv.ParseInt(flag.Arg(1), 10, 64)
 		if err != nil {
 			log.Fatal("Fail to parse args! Second arg must be int.", err)
 		}
-		hash,err := api.TransferEth(conf.Node, conf.PrivateKey, flag.Arg(0), int64(amount))
+		hash,err := api.TransferEth(conf.Node, conf.PrivateKey, flag.Arg(0), amount)
 		if err != nil {
 			log.Fatal("TransferEther fail", err)
 		}
-		log.Infof("Success!Tx %s is pending...", hash)
+		log.Infof("Success! Transfer Ether at Tx %x .", hash)
 	case "getHeader":
 		blockHeight,err := strconv.Atoi(flag.Arg(0))
 		if err != nil {
@@ -64,5 +74,48 @@ func main() {
 			log.Fatal("GetHeader fail", err)
 		}
 		log.Info(header)
+	case "testInfinite":
+		instanceAmount,err := strconv.Atoi(flag.Arg(0))
+		if err != nil {
+			log.Fatal("Fail to parse args! First arg must be int.", err)
+		}
+		var initEther int64 = defaultInitEther
+		arg2,_ := strconv.ParseInt(flag.Arg(1), 10, 64)
+		if arg2>0 {
+			initEther = arg2
+		}
+		testUtils.TestServer(instanceAmount, conf.Node, conf.PrivateKey, initEther, 0, 0)
+	case "testFixedTime":
+		instanceAmount,err := strconv.Atoi(flag.Arg(0))
+		if err != nil {
+			log.Fatal("Fail to parse args! First arg must be int.", err)
+		}
+		testDuration,err := strconv.Atoi(flag.Arg(1)) // second
+		if err != nil {
+			log.Fatal("Fail to parse args! First arg must be int.", err)
+		}
+		var initEther int64 = defaultInitEther
+		arg3,_ := strconv.ParseInt(flag.Arg(2), 10, 64)
+		if arg3>0 {
+			initEther = arg3
+		}
+		testUtils.TestServer(instanceAmount, conf.Node, conf.PrivateKey, initEther, testDuration, 0)
+	case "testFixedRound":
+		instanceAmount,err := strconv.Atoi(flag.Arg(0))
+		if err != nil {
+			log.Fatal("Fail to parse args! First arg must be int.", err)
+		}
+		testRound,err := strconv.Atoi(flag.Arg(1))
+		if err != nil {
+			log.Fatal("Fail to parse args! First arg must be int.", err)
+		}
+		var initEther int64 = defaultInitEther
+		arg3,_ := strconv.ParseInt(flag.Arg(2), 10, 64)
+		if arg3>0 {
+			initEther = arg3
+		}
+		testUtils.TestServer(instanceAmount, conf.Node, conf.PrivateKey, initEther,0, testRound)
+	default :
+		log.Fatal("unknown function", function)
 	}
 }

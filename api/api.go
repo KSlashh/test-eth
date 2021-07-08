@@ -4,12 +4,11 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"errors"
-	"math/big"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"math/big"
 )
 
 func TransferEth(clientUrl string, privateKeyHex string, toAddressHex string, amount int64) (txHash [32]byte, err error) {
@@ -64,33 +63,33 @@ func TransferEth(clientUrl string, privateKeyHex string, toAddressHex string, am
 	return signedTx.Hash(),nil
 }
 
-func GetBalance(clientUrl string, addressHex string) (balance int64, err error) {
+func GetBalance(clientUrl string, addressHex string) (balance *big.Int, err error) {
 	client, err := ethclient.Dial(clientUrl)
 	if err != nil {
-		return 0,err
+		return nil,err
 	}
 
 	account := common.HexToAddress(addressHex)
 	b, err := client.BalanceAt(context.Background(), account, nil)
 	if err != nil {
-		return 0,err
+		return nil,err
 	}
-	return b.Int64(),nil
+	return b,nil
 }
 
-func GetBalanceAt(clientUrl string ,addressHex string, height int64) (balance int64, err error) {
+func GetBalanceAt(clientUrl string ,addressHex string, height int64) (balance *big.Int, err error) {
 	client, err := ethclient.Dial(clientUrl)
 	if err != nil {
-		return 0,err
+		return nil,err
 	}
 
 	account := common.HexToAddress(addressHex)
 	blockNumber := big.NewInt(height)
 	b, err := client.BalanceAt(context.Background(), account, blockNumber)
 	if err != nil {
-		return 0,err
+		return nil,err
 	}
-	return b.Int64(),nil
+	return b,nil
 }
 
 func GetBlockHeader(clientUrl string ,height int64) (header *types.Header, err error){
