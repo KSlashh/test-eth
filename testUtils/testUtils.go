@@ -25,7 +25,7 @@ var totalDataRecordFrequency float64 = 20      // second
 var checkTxComfirmFrequency = time.Second * 1
 
 func TestServer(numOfInstance int, clientUrl string, privateKeyhex string, initEther int64 , duration int, round int) {
-	msgChan := make(chan instanceMsg, 1000*numOfInstance)
+	msgChan := make(chan instanceMsg, 10000*numOfInstance)
 	if round > 0 {
 		for i:=0;i<numOfInstance;i++ {
 			go FixedRoundTestInstance(clientUrl, privateKeyhex, i, initEther, round, msgChan)
@@ -39,7 +39,14 @@ func TestServer(numOfInstance int, clientUrl string, privateKeyhex string, initE
 			go InfiniteTestInstance(clientUrl, privateKeyhex, i, initEther, msgChan)
 		}
 	}
+	client,_ := ethclient.Dial(clientUrl)
+	header,_ := client.HeaderByNumber(context.Background(), nil)
+	startHeight := header.Number
+	log.Infof("Start test. Start at block %s.", startHeight.String())
 	Recorder(msgChan)
+	header,_ = client.HeaderByNumber(context.Background(), nil)
+	endHeight := header.Number
+	log.Infof("Done test. Started at block %s, end at block %s.", startHeight.String(), endHeight.String())
 }
 
 func Recorder(msgs chan instanceMsg) {
@@ -69,7 +76,7 @@ func Recorder(msgs chan instanceMsg) {
 			liveInstance -= 1
 			deadInsatance += 1
 			if liveInstance == 0 {
-				log.Infof("ToTal data: " +
+				log.Infof("——————————ToTal data: " +
 					"Start-time: %s, " +
 					"Duration: %f s, " +
 					"Succeed-Txns: %d, " +
@@ -95,7 +102,7 @@ func Recorder(msgs chan instanceMsg) {
 		}
 		if goodTx.Int64() == 0 {continue}
 		if time.Since(timeCache2).Seconds() >= totalDataRecordFrequency {
-			log.Infof("ToTal data: " +
+			log.Infof("——————————ToTal data: " +
 				"Start-time: %s, " +
 				"Duration: %f s, " +
 				"Succeed-Txns: %d, " +
@@ -133,7 +140,7 @@ func Recorder(msgs chan instanceMsg) {
 				liveInstance,
 				deadInsatance,
 				averageCost.Div(totalCostTmp, goodTxTmp),
-				float64(goodTxTmp.Int64())/(time.Since(start).Seconds()),
+				float64(goodTxTmp.Int64())/(time.Since(timeCache).Seconds()),
 				)
 			goodTxTmp = big.NewInt(0)
 			badTxTmp = big.NewInt(0)
