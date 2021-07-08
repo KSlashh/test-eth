@@ -20,9 +20,9 @@ func init() {
 		"  getBalance [address]\n" +
 		"  getBalanceAt [address] [height]\n" +
 		"  getHeader [height]\n" +
-		"  testInfinite [instanceAmount] [initEther(default 1e18)]\n" +
-		"  testFixedRound [instanceAmount] [round] [initEther/(wei)(default 1e18)]\n" +
-		"  testFixedTime [instanceAmount] [duration/(second)] [initEther/(wei)(default 1e18)]")
+		"  testInfinite [instanceAmount] [initEther/(ether)(default 1e18)]\n" +
+		"  testFixedRound [instanceAmount] [round] [initEther/(ether)(default 1e18)]\n" +
+		"  testFixedTime [instanceAmount] [duration/(second)] [initEther/(ether)(default 1e18)]")
 
 	flag.Parse()
 
@@ -71,7 +71,7 @@ func main() {
 		var initEther int64 = defaultInitEther
 		arg2,_ := strconv.ParseInt(flag.Arg(1), 10, 64)
 		if arg2>0 {
-			initEther = arg2
+			initEther = arg2*10^18
 		}
 		testUtils.TestServer(instanceAmount, conf.Node, conf.PrivateKey, initEther, 0, 0)
 	case "testFixedTime":
@@ -86,7 +86,7 @@ func main() {
 		var initEther int64 = defaultInitEther
 		arg3,_ := strconv.ParseInt(flag.Arg(2), 10, 64)
 		if arg3>0 {
-			initEther = arg3
+			initEther = arg3*10^18
 		}
 		testUtils.TestServer(instanceAmount, conf.Node, conf.PrivateKey, initEther, testDuration, 0)
 	case "testFixedRound":
@@ -101,7 +101,7 @@ func main() {
 		var initEther int64 = defaultInitEther
 		arg3,_ := strconv.ParseInt(flag.Arg(2), 10, 64)
 		if arg3>0 {
-			initEther = arg3
+			initEther = arg3*10^18
 		}
 		testUtils.TestServer(instanceAmount, conf.Node, conf.PrivateKey, initEther,0, testRound)
 	default :
