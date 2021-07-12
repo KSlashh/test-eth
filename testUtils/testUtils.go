@@ -48,6 +48,9 @@ func TestServer2(numOfInstance int, clientUrl string, privateKeyHex string, init
 
 func Recorder2(client *ethclient.Client, startHeight *big.Int) {
 	header,err := client.HeaderByNumber(context.Background(), startHeight)
+	if err != nil {
+		log.Fatal(err)
+	}
 	timeStamp := header.Time
 	height := startHeight
 	log.Infof("Start recording at height %s", height.String())
@@ -64,7 +67,10 @@ func Recorder2(client *ethclient.Client, startHeight *big.Int) {
 			continue
 		}
 		height.Add(height,one)
-		count,_ := client.TransactionCount(context.Background(), header.Hash())
+		count,err := client.TransactionCount(context.Background(), header.Hash())
+		if err != nil {
+			log.Fatal(err)
+		}
 		time := header.Time
 		totalTxns.Add(totalTxns, tmp.SetUint64(uint64(count)))
 		duration.SetUint64(time-timeStamp)
