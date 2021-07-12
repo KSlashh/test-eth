@@ -42,6 +42,7 @@ func TestServer2(numOfInstance int, clientUrl string, privateKeyHex string, init
 	}
 	startHeight := header.Number
 	log.Infof("Start testing at height %s", startHeight.String())
+	for {}
 	// Recorder2(client, startHeight)
 }
 
