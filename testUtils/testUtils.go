@@ -32,8 +32,14 @@ func TestServer2(numOfInstance int, clientUrl string, privateKeyHex string, init
 	for i:=0;i<numOfInstance;i++ {
 		go Instance2(clientUrl, privateKeyHex, initEther)
 	}
-	client,_ := ethclient.Dial(clientUrl)
-	header,_ := client.HeaderByNumber(context.Background(), nil)
+	client,err := ethclient.Dial(clientUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	header,err := client.HeaderByNumber(context.Background(), nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 	startHeight := header.Number
 	log.Infof("Start testing at height %s", startHeight.String())
 	// Recorder2(client, startHeight)
