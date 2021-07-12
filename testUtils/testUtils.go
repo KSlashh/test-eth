@@ -27,14 +27,15 @@ var instanceTransferFrequency = time.Second * 1
 var smapleTxnAmount = big.NewInt(10000)
 var txnsPerPack = 10
 
+
 func TestServer2(numOfInstance int, clientUrl string, privateKeyHex string, initEther *big.Int) {
-	client,_ := ethclient.Dial(clientUrl)
-	header,_ := client.HeaderByNumber(context.Background(), nil)
-	startHeight := header.Number
 	for i:=0;i<numOfInstance;i++ {
 		go Instance2(clientUrl, privateKeyHex, initEther)
 	}
-	Recorder2(client, startHeight)
+	//client,_ := ethclient.Dial(clientUrl)
+	//header,_ := client.HeaderByNumber(context.Background(), nil)
+	//startHeight := header.Number
+	// Recorder2(client, startHeight)
 }
 
 func Recorder2(client *ethclient.Client, startHeight *big.Int) {
@@ -47,7 +48,9 @@ func Recorder2(client *ethclient.Client, startHeight *big.Int) {
     duration := big.NewInt(0)
 	one := big.NewInt(1)
 	tmp := big.NewInt(1)
-	for  ;;header,err = client.HeaderByNumber(context.Background(), height) {
+	height.Add(height,one)
+	for {
+		header,err = client.HeaderByNumber(context.Background(), height)
 		if err != nil {
 			time.Sleep(time.Second * 1)
 			continue

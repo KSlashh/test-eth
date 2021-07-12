@@ -26,7 +26,8 @@ func init() {
 		"  testInfinite [instanceAmount] [initEther/(ether)(default 1)]\n" +
 		"  testFixedRound [instanceAmount] [round] [initEther/(ether)(default 1)]\n" +
 		"  testFixedTime [instanceAmount] [duration/(second)] [initEther/(ether)(default 1)]\n+" +
-		"  test2 [instanceAmount(default 200)] [initEther/(ether)(default 10)]")
+		"  test2 [instanceAmount(default 200)] [initEther/(ether)(default 10)]\n+" +
+		"  record [startHeight]")
 
 	flag.Parse()
 
@@ -43,6 +44,10 @@ func main() {
 	}
 
 	switch function {
+	case "record":
+		startHeight := big.NewInt(1)
+		startHeight.SetString(flag.Arg(0), 10)
+		testUtils.Recorder2(client, startHeight)
 	case "test2":
 		instanceAmount := 200
 		initEther := big.NewInt(10^19)
