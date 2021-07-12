@@ -66,11 +66,12 @@ func Recorder2(client *ethclient.Client, startHeight *big.Int) {
 			time.Sleep(time.Second * 1)
 			continue
 		}
-		height.Add(height,one)
 		count,err := client.TransactionCount(context.Background(), header.Hash())
 		if err != nil {
-			log.Fatal(err)
+			log.Info(err)
+			continue
 		}
+		height.Add(height,one)
 		time := header.Time
 		totalTxns.Add(totalTxns, tmp.SetUint64(uint64(count)))
 		duration.SetUint64(time-timeStamp)
@@ -166,7 +167,7 @@ func sendETH(client *ethclient.Client, privateKey *ecdsa.PrivateKey, nonce uint6
 	var data []byte
 	tx := types.NewTransaction(nonce, toAddress, amount, gasLimit, gasPrice, data)
 
-	chainID, err := client.NetworkID(context.Background())
+	chainID, err := client.ChainID(context.Background())
 	if err != nil {
 		return err
 	}

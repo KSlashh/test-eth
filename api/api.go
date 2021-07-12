@@ -39,7 +39,7 @@ func TransferEth(client *ethclient.Client, privateKeyHex string, toAddressHex st
 	var data []byte
 	tx := types.NewTransaction(nonce, toAddress, amount, gasLimit, gasPrice, data)
 
-	chainID, err := client.NetworkID(context.Background())
+	chainID, err := client.ChainID(context.Background())
 	if err != nil {
 		return common.Hash{},err
 	}
