@@ -32,9 +32,10 @@ func TestServer2(numOfInstance int, clientUrl string, privateKeyHex string, init
 	for i:=0;i<numOfInstance;i++ {
 		go Instance2(clientUrl, privateKeyHex, initEther)
 	}
-	//client,_ := ethclient.Dial(clientUrl)
-	//header,_ := client.HeaderByNumber(context.Background(), nil)
-	//startHeight := header.Number
+	client,_ := ethclient.Dial(clientUrl)
+	header,_ := client.HeaderByNumber(context.Background(), nil)
+	startHeight := header.Number
+	log.Infof("Start testing at height %s", startHeight.String())
 	// Recorder2(client, startHeight)
 }
 
@@ -42,7 +43,7 @@ func Recorder2(client *ethclient.Client, startHeight *big.Int) {
 	header,err := client.HeaderByNumber(context.Background(), startHeight)
 	timeStamp := header.Time
 	height := startHeight
-	log.Infof("Start testing at height %s", height.String())
+	log.Infof("Start recording at height %s", height.String())
 	totalTxns := big.NewInt(0)
 	totalTime := big.NewInt(0)
     duration := big.NewInt(0)
