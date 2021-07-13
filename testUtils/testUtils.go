@@ -28,9 +28,6 @@ var smapleTxnAmount = big.NewInt(10000)
 var txnsPerPack = 10
 
 func TestServer2(numOfInstance int, clientUrl string, privateKeyHex string, initEther *big.Int) {
-	for i := 0; i < numOfInstance; i++ {
-		go Instance2(clientUrl, privateKeyHex, initEther)
-	}
 	client, err := ethclient.Dial(clientUrl)
 	if err != nil {
 		log.Fatal(err)
@@ -41,6 +38,9 @@ func TestServer2(numOfInstance int, clientUrl string, privateKeyHex string, init
 	}
 	startHeight := header.Number
 	log.Infof("Start testing at height %s", startHeight.String())
+	for i := 0; i < numOfInstance; i++ {
+		go Instance2(clientUrl, privateKeyHex, initEther)
+	}
 	for {
 	}
 	// Recorder2(client, startHeight)
@@ -121,27 +121,33 @@ func Instance2(clientUrl string, mainPrivateKeyHex string, initEther *big.Int) {
 
 	// admin-->initEther-->A
 	for {
-		hash, err := api.TransferEth(client, mainPrivateKeyHex, pkA.Hex(), initEther)
+		_, err := api.TransferEth(client, mainPrivateKeyHex, pkA.Hex(), initEther)
 		if err != nil {
 			continue
 		}
-		isSuccess := WaitTransactionConfirm(client, hash[:])
-		if isSuccess {
-			break
-		}
+		break
+		//isSuccess := WaitTransactionConfirm(client, hash[:])
+		//if isSuccess {
+		//	break
+		//}
 	}
+
+	time.Sleep(instanceTransferFrequency)
 
 	// admin-->initEther-->B
 	for {
-		hash, err := api.TransferEth(client, mainPrivateKeyHex, pkB.Hex(), initEther)
+		_, err := api.TransferEth(client, mainPrivateKeyHex, pkB.Hex(), initEther)
 		if err != nil {
 			continue
 		}
-		isSuccess := WaitTransactionConfirm(client, hash[:])
-		if isSuccess {
-			break
-		}
+		break
+		//isSuccess := WaitTransactionConfirm(client, hash[:])
+		//if isSuccess {
+		//	break
+		//}
 	}
+
+	time.Sleep(instanceTransferFrequency)
 
 	nonceA, err := client.NonceAt(context.Background(), pkA, nil)
 	nonceB, err := client.NonceAt(context.Background(), pkB, nil)
