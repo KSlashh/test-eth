@@ -39,6 +39,9 @@ func TestServer2(numOfInstance int, clientUrl string, privateKeyHex string, init
 	startHeight := header.Number
 	log.Infof("Start testing at height %s", startHeight.String())
 	for i := 0; i < numOfInstance; i++ {
+		if i%30 == 29 {
+			time.Sleep(time.Second * 1)
+		}
 		go Instance2(clientUrl, privateKeyHex, initEther)
 	}
 	for {
