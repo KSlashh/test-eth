@@ -123,63 +123,72 @@ func Instance2(clientUrl string, mainPrivateKeyHex string, initEther *big.Int) {
 	pkB := crypto.PubkeyToAddress(*privateKeyB.Public().(*ecdsa.PublicKey))
 
 	// admin-->initEther-->A
-	for {
-		m.Lock()
-		_, err := api.TransferEth(client, mainPrivateKeyHex, pkA.Hex(), initEther)
-		m.Unlock()
-		if err != nil {
-			continue
-		}
-		break
-		//isSuccess := WaitTransactionConfirm(client, hash[:])
-		//if isSuccess {
-		//	break
-		//}
-	}
+
 
 	// admin-->initEther-->B
+	pkabalance, pkbbalance := new(big.Int), new(big.Int)
+	api.TransferEth(client, mainPrivateKeyHex, pkA.Hex(), initEther)
 	for {
-		m.Lock()
-		_, err := api.TransferEth(client, mainPrivateKeyHex, pkB.Hex(), initEther)
-		m.Unlock()
-		if err != nil {
-			continue
+		balance, _ := client.BalanceAt(context.Background(), pkA, nil)
+		time.Sleep(1 * time.Second)
+		if balance.Cmp(initEther) >= 0 {
+			pkabalance = balance
+			break
 		}
-		break
-		//isSuccess := WaitTransactionConfirm(client, hash[:])
-		//if isSuccess {
-		//	break
-		//}
 	}
+	api.TransferEth(client, mainPrivateKeyHex, pkB.Hex(), initEther)
+	for {
+		balance, _ := client.BalanceAt(context.Background(), pkB, nil)
+		time.Sleep(1 * time.Second)
+		if balance.Cmp(initEther) >= 0 {
+			pkbbalance = balance
+			break
+		}
+	}
+
+	log.Infof("pka %s balance %s", pkA.Hex(), pkabalance.String())
+	log.Infof("pkb %s balance %s", pkB.Hex(), pkbbalance.String())
 
 	nonceA, err := client.NonceAt(context.Background(), pkA, nil)
 	nonceB, err := client.NonceAt(context.Background(), pkB, nil)
 	gasLimit := uint64(21000)
 	gasPrice := big.NewInt(1000000000)
-	for {
-		err = sendETH(client, privateKeyA, nonceA, pkB, smapleTxnAmount, gasLimit, gasPrice)
-		if err != nil {
-			nonceA, _ = client.PendingNonceAt(context.Background(), pkA)
-		} else {
-			nonceA += 1
-		}
-		err = sendETH(client, privateKeyB, nonceB, pkA, smapleTxnAmount, gasLimit, gasPrice)
-		if err != nil {
-			nonceB, _ = client.PendingNonceAt(context.Background(), pkB)
-		} else {
-			nonceB += 1
-		}
+	length := 10000
+	cnt := 0
+
+	for cnt < length {
+		sendETH(client, privateKeyA, nonceA, pkB, smapleTxnAmount, gasLimit, gasPrice)
+		sendETH(client, privateKeyB, nonceB, pkA, smapleTxnAmount, gasLimit, gasPrice)
+		nonceA += 1
+		nonceB += 1
+		cnt+=1
 	}
+	log.Infof("success!")
+	//for {
+	//	err = sendETH(client, privateKeyA, nonceA, pkB, smapleTxnAmount, gasLimit, gasPrice)
+	//	if err != nil {
+	//		nonceA, _ = client.PendingNonceAt(context.Background(), pkA)
+	//	} else {
+	//		nonceA += 1
+	//	}
+	//	err = sendETH(client, privateKeyB, nonceB, pkA, smapleTxnAmount, gasLimit, gasPrice)
+	//	if err != nil {
+	//		nonceB, _ = client.PendingNonceAt(context.Background(), pkB)
+	//	} else {
+	//		nonceB += 1
+	//	}
+	//}
 }
 
 func sendETH(client *ethclient.Client, privateKey *ecdsa.PrivateKey, nonce uint64, toAddress common.Address, amount *big.Int, gasLimit uint64, gasPrice *big.Int) error {
 	var data []byte
 	tx := types.NewTransaction(nonce, toAddress, amount, gasLimit, gasPrice, data)
 
-	chainID, err := client.ChainID(context.Background())
-	if err != nil {
-		return err
-	}
+	//chainID, err := client.ChainID(context.Background())
+	//if err != nil {
+	//	return err
+	//}
+	chainID := big.NewInt(102)
 
 	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
 	if err != nil {
