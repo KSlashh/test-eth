@@ -122,16 +122,10 @@ func Instance2(clientUrl string, mainPrivateKeyHex string, initEther *big.Int) {
 	for {
 		hash, err := api.TransferEth(client, mainPrivateKeyHex, pkA.Hex(), initEther)
 		if err != nil {
-			// ---
-			log.Info(err)
-			// ---
 			continue
 		}
 		isSuccess := WaitTransactionConfirm(client, hash[:])
 		if isSuccess {
-			// ---
-			log.Info("success A")
-			// ---
 			break
 		}
 	}
@@ -144,9 +138,6 @@ func Instance2(clientUrl string, mainPrivateKeyHex string, initEther *big.Int) {
 		}
 		isSuccess := WaitTransactionConfirm(client, hash[:])
 		if isSuccess {
-			// ---
-			log.Info("success B")
-			// ---
 			break
 		}
 	}
