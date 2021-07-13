@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"math/big"
+	"sync"
 	"time"
 
 	"github.com/KSlashh/test-eth/api"
@@ -16,7 +17,7 @@ import (
 )
 
 type instanceMsg struct {
-	msgType  int // 1:successTx , 2:failedTx , 3:instanceShutDown , 4:instanceStart
+	msgType  int // 1:successTx , 2:failedTx , 3:instanceShutDown , 4:instanceStart32G
 	timeCost int // millisecond
 }
 
@@ -26,6 +27,7 @@ var checkTxComfirmFrequency = time.Second * 1
 var instanceTransferFrequency = time.Second * 1
 var smapleTxnAmount = big.NewInt(10000)
 var txnsPerPack = 10
+var m *sync.Mutex
 
 func TestServer2(numOfInstance int, clientUrl string, privateKeyHex string, initEther *big.Int) {
 	client, err := ethclient.Dial(clientUrl)
@@ -38,10 +40,8 @@ func TestServer2(numOfInstance int, clientUrl string, privateKeyHex string, init
 	}
 	startHeight := header.Number
 	log.Infof("Start testing at height %s", startHeight.String())
+	m = new(sync.Mutex)
 	for i := 0; i < numOfInstance; i++ {
-		if i%30 == 29 {
-			time.Sleep(time.Second * 1)
-		}
 		go Instance2(clientUrl, privateKeyHex, initEther)
 	}
 	for {
@@ -124,7 +124,9 @@ func Instance2(clientUrl string, mainPrivateKeyHex string, initEther *big.Int) {
 
 	// admin-->initEther-->A
 	for {
+		m.Lock()
 		_, err := api.TransferEth(client, mainPrivateKeyHex, pkA.Hex(), initEther)
+		m.Unlock()
 		if err != nil {
 			continue
 		}
@@ -137,7 +139,9 @@ func Instance2(clientUrl string, mainPrivateKeyHex string, initEther *big.Int) {
 
 	// admin-->initEther-->B
 	for {
+		m.Lock()
 		_, err := api.TransferEth(client, mainPrivateKeyHex, pkB.Hex(), initEther)
+		m.Unlock()
 		if err != nil {
 			continue
 		}
@@ -148,8 +152,6 @@ func Instance2(clientUrl string, mainPrivateKeyHex string, initEther *big.Int) {
 		//}
 	}
 
-	time.Sleep(instanceTransferFrequency)
-
 	nonceA, err := client.NonceAt(context.Background(), pkA, nil)
 	nonceB, err := client.NonceAt(context.Background(), pkB, nil)
 	gasLimit := uint64(21000)
@@ -158,13 +160,13 @@ func Instance2(clientUrl string, mainPrivateKeyHex string, initEther *big.Int) {
 		time.Sleep(instanceTransferFrequency)
 		err = sendETH(client, privateKeyA, nonceA, pkB, smapleTxnAmount, gasLimit, gasPrice)
 		if err != nil {
-			nonceA, _ = client.PendingNonceAt(context.Background(), pkA)
+			nonceA, _ = client.NonceAt(context.Background(), pkA, nil)
 		} else {
 			nonceA += 1
 		}
 		err = sendETH(client, privateKeyB, nonceB, pkA, smapleTxnAmount, gasLimit, gasPrice)
 		if err != nil {
-			nonceB, _ = client.PendingNonceAt(context.Background(), pkB)
+			nonceB, _ = client.NonceAt(context.Background(), pkB, nil)
 		} else {
 			nonceB += 1
 		}
