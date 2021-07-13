@@ -14,25 +14,25 @@ import (
 func TransferEth(client *ethclient.Client, privateKeyHex string, toAddressHex string, amount *big.Int) (txHash [32]byte, err error) {
 	privateKey, err := crypto.HexToECDSA(privateKeyHex)
 	if err != nil {
-		return common.Hash{},err
+		return common.Hash{}, err
 	}
 
 	publicKey := privateKey.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
-		return common.Hash{},errors.New("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+		return common.Hash{}, errors.New("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
 	}
 
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
 	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
 	if err != nil {
-		return common.Hash{},err
+		return common.Hash{}, err
 	}
 
 	gasLimit := uint64(21000)
 	gasPrice := big.NewInt(1000000000)
 	if err != nil {
-		return common.Hash{},err
+		return common.Hash{}, err
 	}
 
 	toAddress := common.HexToAddress(toAddressHex)
@@ -41,46 +41,46 @@ func TransferEth(client *ethclient.Client, privateKeyHex string, toAddressHex st
 
 	chainID, err := client.ChainID(context.Background())
 	if err != nil {
-		return common.Hash{},err
+		return common.Hash{}, err
 	}
 
 	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
 	if err != nil {
-		return common.Hash{},err
+		return common.Hash{}, err
 	}
 
 	err = client.SendTransaction(context.Background(), signedTx)
 	if err != nil {
-		return common.Hash{},err
+		return common.Hash{}, err
 	}
 
-	return signedTx.Hash(),nil
+	return signedTx.Hash(), nil
 }
 
 func GetBalance(client *ethclient.Client, addressHex string) (balance *big.Int, err error) {
 	account := common.HexToAddress(addressHex)
 	b, err := client.BalanceAt(context.Background(), account, nil)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	return b,nil
+	return b, nil
 }
 
-func GetBalanceAt(client *ethclient.Client ,addressHex string, height int64) (balance *big.Int, err error) {
+func GetBalanceAt(client *ethclient.Client, addressHex string, height int64) (balance *big.Int, err error) {
 	account := common.HexToAddress(addressHex)
 	blockNumber := big.NewInt(height)
 	b, err := client.BalanceAt(context.Background(), account, blockNumber)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	return b,nil
+	return b, nil
 }
 
-func GetBlockHeader(client *ethclient.Client ,height int64) (header *types.Header, err error){
+func GetBlockHeader(client *ethclient.Client, height int64) (header *types.Header, err error) {
 	blockNumber := big.NewInt(height)
 	header, err = client.HeaderByNumber(context.Background(), blockNumber)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	return header,nil
+	return header, nil
 }
