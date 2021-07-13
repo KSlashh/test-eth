@@ -157,16 +157,15 @@ func Instance2(clientUrl string, mainPrivateKeyHex string, initEther *big.Int) {
 	gasLimit := uint64(21000)
 	gasPrice := big.NewInt(1000000000)
 	for {
-		time.Sleep(instanceTransferFrequency)
 		err = sendETH(client, privateKeyA, nonceA, pkB, smapleTxnAmount, gasLimit, gasPrice)
 		if err != nil {
-			nonceA, _ = client.NonceAt(context.Background(), pkA, nil)
+			nonceA, _ = client.PendingNonceAt(context.Background(), pkA)
 		} else {
 			nonceA += 1
 		}
 		err = sendETH(client, privateKeyB, nonceB, pkA, smapleTxnAmount, gasLimit, gasPrice)
 		if err != nil {
-			nonceB, _ = client.NonceAt(context.Background(), pkB, nil)
+			nonceB, _ = client.PendingNonceAt(context.Background(), pkB)
 		} else {
 			nonceB += 1
 		}
