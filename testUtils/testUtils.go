@@ -42,9 +42,7 @@ func TestServer2(numOfInstance int, clientUrl string, privateKeyHex string, init
 	log.Infof("Start testing at height %s", startHeight.String())
 	m = new(sync.Mutex)
 	for i := 0; i < numOfInstance; i++ {
-		go Instance2(clientUrl, privateKeyHex, initEther)
-	}
-	for {
+		Instance2(clientUrl, privateKeyHex, initEther)
 	}
 	// Recorder2(client, startHeight)
 }
@@ -107,7 +105,7 @@ func Instance2(clientUrl string, mainPrivateKeyHex string, initEther *big.Int) {
 	if err != nil {
 		log.Fatalf("Instance fail to dial client")
 	}
-
+    client2,_ := ethclient.Dial(clientUrl)
 	// generate 2 accounts
 	privateKeyA, err := crypto.GenerateKey()
 	if err != nil {
@@ -158,7 +156,7 @@ func Instance2(clientUrl string, mainPrivateKeyHex string, initEther *big.Int) {
 
 	for cnt < length {
 		sendETH(client, privateKeyA, nonceA, pkB, smapleTxnAmount, gasLimit, gasPrice)
-		sendETH(client, privateKeyB, nonceB, pkA, smapleTxnAmount, gasLimit, gasPrice)
+		sendETH(client2, privateKeyB, nonceB, pkA, smapleTxnAmount, gasLimit, gasPrice)
 		nonceA += 1
 		nonceB += 1
 		cnt+=1
@@ -189,8 +187,9 @@ func sendETH(client *ethclient.Client, privateKey *ecdsa.PrivateKey, nonce uint6
 	//	return err
 	//}
 	chainID := big.NewInt(102)
+	signer := types.NewEIP155Signer(chainID)
 
-	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), privateKey)
+	signedTx, err := types.SignTx(tx, signer, privateKey)
 	if err != nil {
 		return err
 	}
