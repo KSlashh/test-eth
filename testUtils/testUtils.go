@@ -132,8 +132,6 @@ func Instance2(clientUrl string, mainPrivateKeyHex string, initEther *big.Int) {
 		//}
 	}
 
-	time.Sleep(instanceTransferFrequency)
-
 	// admin-->initEther-->B
 	for {
 		_, err := api.TransferEth(client, mainPrivateKeyHex, pkB.Hex(), initEther)
@@ -161,7 +159,7 @@ func Instance2(clientUrl string, mainPrivateKeyHex string, initEther *big.Int) {
 		} else {
 			nonceA += 1
 		}
-		sendETH(client, privateKeyB, nonceA, pkA, smapleTxnAmount, gasLimit, gasPrice)
+		err = sendETH(client, privateKeyB, nonceB, pkA, smapleTxnAmount, gasLimit, gasPrice)
 		if err != nil {
 			nonceB, _ = client.PendingNonceAt(context.Background(), pkB)
 		} else {
