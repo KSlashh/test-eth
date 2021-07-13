@@ -25,7 +25,7 @@ func TransferEth(client *ethclient.Client, privateKeyHex string, toAddressHex st
 	}
 
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	nonce, err := client.NonceAt(context.Background(), fromAddress, nil)
+	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
 	// ---
 	fmt.Println(nonce)
 	// ---
