@@ -122,10 +122,16 @@ func Instance2(clientUrl string, mainPrivateKeyHex string, initEther *big.Int) {
 	for {
 		hash, err := api.TransferEth(client, mainPrivateKeyHex, pkA.Hex(), initEther)
 		if err != nil {
+			// ---
+			log.Info(err)
+			// ---
 			continue
 		}
 		isSuccess := WaitTransactionConfirm(client, hash[:])
 		if isSuccess {
+			// ---
+			log.Info("success A")
+			// ---
 			break
 		}
 	}
@@ -138,30 +144,34 @@ func Instance2(clientUrl string, mainPrivateKeyHex string, initEther *big.Int) {
 		}
 		isSuccess := WaitTransactionConfirm(client, hash[:])
 		if isSuccess {
+			// ---
+			log.Info("success B")
+			// ---
 			break
 		}
 	}
 
-	nonceA, err := client.PendingNonceAt(context.Background(), pkA)
-	nonceB, err := client.PendingNonceAt(context.Background(), pkB)
+	nonceA, err := client.NonceAt(context.Background(), pkA, nil)
+	nonceB, err := client.NonceAt(context.Background(), pkB, nil)
 	gasLimit := uint64(21000)
-	gasPrice := big.NewInt(1)
+	gasPrice := big.NewInt(1000000000)
     for {
     	time.Sleep(instanceTransferFrequency)
 		err = sendETH(client, privateKeyA, nonceA, pkB, smapleTxnAmount, gasLimit, gasPrice)
 		if err != nil {
-			nonceA,_ = client.PendingNonceAt(context.Background(), pkA)
+			nonceA,_ = client.NonceAt(context.Background(), pkA, nil)
 		} else {
 			nonceA += 1
 		}
 		sendETH(client, privateKeyB, nonceA, pkA, smapleTxnAmount, gasLimit, gasPrice)
 		if err != nil {
-			nonceB,_ = client.PendingNonceAt(context.Background(), pkA)
+			nonceB,_ = client.NonceAt(context.Background(), pkB, nil)
 		} else {
 			nonceB += 1
 		}
 	}
 }
+
 
 func sendETH(client *ethclient.Client, privateKey *ecdsa.PrivateKey, nonce uint64, toAddress common.Address, amount *big.Int, gasLimit uint64, gasPrice *big.Int) (error) {
 	var data []byte

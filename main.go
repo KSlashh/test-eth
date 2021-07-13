@@ -14,7 +14,6 @@ import (
 
 var confFile string
 var function string
-var defaultInitEther int64 = 10^19
 
 func init() {
 	flag.StringVar(&confFile, "conf", "./config.json", "configuration file path")
@@ -50,7 +49,8 @@ func main() {
 		testUtils.Recorder2(client, startHeight)
 	case "test2":
 		instanceAmount := 200
-		initEther := big.NewInt(10^19)
+		initEther := big.NewInt(1000000000000000000)
+		initEther.Mul(initEther,big.NewInt(10))
 		args := flag.Args()
 		switch len(args) {
 		case 1:
@@ -64,9 +64,9 @@ func main() {
 				instanceAmount = 200
 			}
 			initEther,ok := initEther.SetString(flag.Arg(1), 10)
-			initEther.Mul(initEther, big.NewInt(10^18))
+			initEther.Mul(initEther, big.NewInt(1000000000000000000))
 			if !ok {
-				initEther.SetInt64(10^19)
+				initEther.Mul(big.NewInt(1000000000000000000),big.NewInt(10))
 			}
 		default:
 		}
@@ -115,7 +115,7 @@ func main() {
 		if err != nil {
 			log.Fatal("Fail to parse args! First arg must be int.", err)
 		}
-		initEther := big.NewInt(10^18)
+		initEther := big.NewInt(1000000000000000000)
 		amount := big.NewInt(0)
 		amount,ok := amount.SetString(flag.Arg(1), 10)
 		if ok {
@@ -131,7 +131,7 @@ func main() {
 		if err != nil {
 			log.Fatal("Fail to parse args! First arg must be int.", err)
 		}
-		initEther := big.NewInt(10^18)
+		initEther := big.NewInt(1000000000000000000)
 		amount := big.NewInt(0)
 		amount,ok := amount.SetString(flag.Arg(2), 10)
 		if ok {
@@ -147,7 +147,7 @@ func main() {
 		if err != nil {
 			log.Fatal("Fail to parse args! First arg must be int.", err)
 		}
-		initEther := big.NewInt(10^18)
+		initEther := big.NewInt(1000000000000000000)
 		amount := big.NewInt(0)
 		amount,ok := amount.SetString(flag.Arg(2), 10)
 		if ok {

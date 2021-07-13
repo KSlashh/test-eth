@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"errors"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -24,13 +25,16 @@ func TransferEth(client *ethclient.Client, privateKeyHex string, toAddressHex st
 	}
 
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+	nonce, err := client.NonceAt(context.Background(), fromAddress, nil)
+	// ---
+	fmt.Println(nonce)
+	// ---
 	if err != nil {
 		return common.Hash{},err
 	}
 
 	gasLimit := uint64(21000)
-	gasPrice, err := client.SuggestGasPrice(context.Background())
+	gasPrice := big.NewInt(1000000000)
 	if err != nil {
 		return common.Hash{},err
 	}
