@@ -82,14 +82,13 @@ func Recorder2(client *ethclient.Client, startHeight *big.Int) {
 			log.Infof("skip empty block %d", height.Int64()-1)
 			continue
 		}
-		log.Infof("Start At height: %s ."+
+		log.Infof(""+
 			"Now height at %s : ,"+
 			"last block duration: %s s,"+
 			"this txns: %d ,"+
 			"total txns: %s ,"+
 			"this tps: %f ,"+
 			"total tps: %s ",
-			startHeight.String(),
 			height.String(),
 			duration.String(),
 			count,
@@ -149,33 +148,66 @@ func Instance2(clientUrl string, mainPrivateKeyHex string, initEther *big.Int) {
 
 	nonceA, err := client.NonceAt(context.Background(), pkA, nil)
 	nonceB, err := client.NonceAt(context.Background(), pkB, nil)
+	chainID := big.NewInt(102)
+	signerA := types.NewEIP155Signer(chainID)
+	signerB := types.NewEIP155Signer(chainID)
 	gasLimit := uint64(21000)
 	gasPrice := big.NewInt(1000000000)
-	length := 10000
-	cnt := 0
+	ch1 := make(chan *types.Transaction, 1000)
+	ch2 := make(chan *types.Transaction, 1000)
 
-	for cnt < length {
-		sendETH(client, privateKeyA, nonceA, pkB, smapleTxnAmount, gasLimit, gasPrice)
-		sendETH(client2, privateKeyB, nonceB, pkA, smapleTxnAmount, gasLimit, gasPrice)
-		nonceA += 1
-		nonceB += 1
-		cnt+=1
+	go func() {
+		for  {
+			signedTx,err := types.SignTx(
+				types.NewTransaction(nonceA, pkA, smapleTxnAmount, gasLimit, gasPrice, nil),
+				signerA,
+				privateKeyA)
+			if err != nil {
+				nonceA,_ = client.PendingNonceAt(context.Background(), pkA)
+			} else {
+				nonceA += 1
+				if nonceA%2 == 1 {
+					ch1<-signedTx
+				} else {
+					ch2<-signedTx
+				}
+			}
+		}
+	}()
+
+	go func() {
+		for  {
+			signedTx,err := types.SignTx(
+				types.NewTransaction(nonceB, pkB, smapleTxnAmount, gasLimit, gasPrice, nil),
+				signerB,
+				privateKeyB)
+			if err != nil {
+				nonceB,_ = client.PendingNonceAt(context.Background(), pkB)
+			} else {
+				nonceB += 1
+				if nonceB%2 == 1 {
+					ch1<-signedTx
+				} else {
+					ch2<-signedTx
+				}
+			}
+		}
+	}()
+
+	go func() {
+		for  {
+
+		}
+	}()
+
+	for {
+		select{
+		case tx := <-ch1:
+			client.SendTransaction(context.Background(), tx)
+		case tx := <- ch2:
+			client2.SendTransaction(context.Background(), tx)
+		}
 	}
-	log.Infof("success!")
-	//for {
-	//	err = sendETH(client, privateKeyA, nonceA, pkB, smapleTxnAmount, gasLimit, gasPrice)
-	//	if err != nil {
-	//		nonceA, _ = client.PendingNonceAt(context.Background(), pkA)
-	//	} else {
-	//		nonceA += 1
-	//	}
-	//	err = sendETH(client, privateKeyB, nonceB, pkA, smapleTxnAmount, gasLimit, gasPrice)
-	//	if err != nil {
-	//		nonceB, _ = client.PendingNonceAt(context.Background(), pkB)
-	//	} else {
-	//		nonceB += 1
-	//	}
-	//}
 }
 
 func sendETH(client *ethclient.Client, privateKey *ecdsa.PrivateKey, nonce uint64, toAddress common.Address, amount *big.Int, gasLimit uint64, gasPrice *big.Int) error {
